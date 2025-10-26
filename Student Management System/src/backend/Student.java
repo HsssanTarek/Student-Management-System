@@ -1,7 +1,6 @@
 
 package backend;
 import java.util.Arrays;
-
 public class Student {
     private String fullName;
     private String studentID;
@@ -24,7 +23,7 @@ public class Student {
             throw new IllegalArgumentException("Invalid Age");
         if (gpa<=0.0||gpa>4.0)
             throw new IllegalArgumentException("Invalid GPA");
-        
+
         this.fullName=fullName;
         this.studentID=studentID;
         this.department=department.toLowerCase();
@@ -46,6 +45,14 @@ public class Student {
         return gpa;
     }
     //before calling any setter make sure that inputs are trimmed!!
+
+    public String getGender() {
+        return gender;
+    }
+
+    public int getAge() {
+        return age;
+    }
     public void setAge(int age){
         if( age <16)
             throw new IllegalArgumentException("Invalid Age");
@@ -57,7 +64,7 @@ public class Student {
         this.department=department;
     }
     public void setFullName(String fullName){
-          if (fullName == null || fullName.isEmpty()||fullName.matches(".*\\d.*"))
+        if (fullName == null || fullName.isEmpty()||fullName.matches(".*\\d.*"))
             throw new IllegalArgumentException("Invalid Name");
         this.fullName=fullName;
     }

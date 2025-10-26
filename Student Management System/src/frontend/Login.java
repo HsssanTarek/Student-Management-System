@@ -1,7 +1,11 @@
 package frontend;
+import backend.AccessController;
+import backend.StudentService;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class Login extends JFrame {
 
@@ -10,19 +14,19 @@ public class Login extends JFrame {
     private JButton jButton1, jButton2;
     private JLabel jLabel1, jLabel2, jLabel3;
     private JPanel jPanel2;
-
+    AccessController accessController;
     public Login() {
-        components();
+        initComponents();
+        accessController = new AccessController();
     }
-
-    private void components() {
+    private void initComponents() {
         jPanel2 = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 Graphics2D g2 = (Graphics2D) g;
                 Color start = new Color(52, 73, 94);
-                Color end = new Color(93, 109, 127);  
+                Color end = new Color(93, 109, 127);
                 GradientPaint gp = new GradientPaint(0, 0, start, 0, getHeight(), end);
                 g2.setPaint(gp);
                 g2.fillRect(0, 0, getWidth(), getHeight());
@@ -71,5 +75,35 @@ public class Login extends JFrame {
         jPanel2.add(jButton1);
         jPanel2.add(jButton2);
         getContentPane().add(jPanel2);
+        jButton1.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String userName = jTextField1.getText();
+                String passWord = jPasswordField1.getText();
+                boolean status= accessController.login(userName,passWord);
+                if (status)
+                {try {
+                    dispose();
+                    StudentService studentService = new StudentService();
+                    Home home = new Home(studentService);
+                    home.setVisible(true);
+                }
+                catch (Exception ex)
+                {
+                    JOptionPane.showMessageDialog(null,"Error :"+ex.getMessage());
+                }
+                }
+                else
+                {
+                    JOptionPane.showMessageDialog(null,"Invalid Username and Password");
+                }
+            }
+        });
+    }
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            new Login().setVisible(true);
+        });
     }
 }
+

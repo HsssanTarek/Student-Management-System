@@ -1,11 +1,14 @@
+package frontend;
+
+import backend.Student;
+import backend.StudentDatabase;
+import backend.StudentService;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
-import javax.swing.RowFilter;
-import javax.swing.table.TableRowSorter;
-
+import java.util.ArrayList;
 public class Home extends JFrame {
 
     // components
@@ -16,14 +19,15 @@ public class Home extends JFrame {
     private JButton btnSearch, btnAdd, btnUpdate, btnDelete, btnLogout;
     private JTable table;
     private JScrollPane tableScroll;
-
-    public Home() {
+    StudentService studentService;
+    public Home(StudentService studentService) {
+        this.studentService=studentService;
         components();
         tableRowClick();
         loadStudents();
     }
-
     private void components() {
+
         // Frame
         setTitle("Student Management System");
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -195,57 +199,41 @@ public class Home extends JFrame {
         btnLogout.setBounds(670, 18, 140, 50);
         buttonsPanel.add(btnLogout);
 
-
-
-
         // ---------- Button Actions ----------
         btnAdd.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                try{
                 String idText = txtId.getText().trim();
                 String name = txtName.getText().trim();
                 String ageText = txtAge.getText().trim();
                 String department = txtDepartment.getText().trim();
                 String gpaText = txtGPA.getText().trim();
                 String gender = comboGender.getSelectedItem().toString();
-
                 if (idText.isEmpty() || name.isEmpty() || ageText.isEmpty() || department.isEmpty() || gpaText.isEmpty()) {
-                    JOptionPane.showMessageDialog(null, "Please fill all fields!");
-                    return;
+                    throw new Exception("Please fill all fields!");
                 }
-
-                int id, age;
-                double gpa;
-                try {
-                    id = Integer.parseInt(idText);
-                    age = Integer.parseInt(ageText);
-                    gpa = Double.parseDouble(gpaText);
+                  int id = Integer.parseInt(idText);
+                  int  age = Integer.parseInt(ageText);
+                  double gpa = Double.parseDouble(gpaText);
                     if ( id<=0 || age<=0 || gpa<0 ){
-                        JOptionPane.showMessageDialog(null, "ID, Age, and GPA must be positive numbers!");
-                        return;
+                        throw new Exception("ID, Age, and GPA must be positive numbers!");
                     }
-                    DefaultTableModel model = (DefaultTableModel)table.getModel();
-                    model.addRow(new Object[]{id,name,age,gender,department,gpa});
+
+                    studentService.addStudent(new Student(idText , name , department , gender , age , gpa) );
                     JOptionPane.showMessageDialog(null,"Student added successfully !");
                     clearFields();
-//                s.add(id , name , age , gender , department , gpa );
                     loadStudents();
                 }
-                catch (NumberFormatException ex) {
-                    JOptionPane.showMessageDialog(null, "ID, Age, and GPA must be numeric!");
-                    return;
-                }
-
-//                Student s = new Student(id , name , age , gender , department , gpa );
-//                s.add();
-//                s.saveToFile();
-            }
-        });
-
+                catch (Exception ex) {
+                    JOptionPane.showMessageDialog(null, "Error :"+ex.getMessage());
+                }}});
         btnUpdate.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try{
+                    int selectedRow = table.getSelectedRow();
+                    if (selectedRow != -1) {
                     String idText = txtId.getText().trim();
                     String name = txtName.getText().trim();
                     String ageText = txtAge.getText().trim();
@@ -259,47 +247,56 @@ public class Home extends JFrame {
                     age = Integer.parseInt(ageText);
                     gpa = Double.parseDouble(gpaText);
                     if ( id<=0 || age<=0 || gpa<0 ){
-                        JOptionPane.showMessageDialog(null, "ID, Age, and GPA must be positive numbers!");
-                        return;
+                        throw new Exception( "ID, Age, and GPA must be positive numbers!");
                     }
-//                    s.update(id , name , age , gender , department , gpa );
+                    studentService.updateStudent(new Student(idText , name , department , gender , age , gpa) );
+                    JOptionPane.showMessageDialog(null,"Student Updated successfully !");
                     loadStudents();
+                    clearFields();
                 }
+                else {
+                    throw new Exception("Please select a student to Update!");
+                }}
                 catch (Exception exception){
-                    JOptionPane.showMessageDialog(null,"Error updating Student data !");
+                    JOptionPane.showMessageDialog(null,"Error :"+exception.getMessage());
                 }
             }
         });
-
         btnDelete.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
-                int selectedRow = table.getSelectedRow();
-                if (selectedRow != -1){
-                    int confirm = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete this student ?");
-                    if (confirm == JOptionPane.YES_OPTION){
-                        String idText = txtId.getText().trim();
-                        int id = Integer.parseInt(idText);
-                        s.delete(id);
-                        loadStudents();
-                        JOptionPane.showMessageDialog(null, "Student deleted successfully !");
+                try {
+                    int selectedRow = table.getSelectedRow();
+                    if (selectedRow != -1) {
+                        int confirm = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete this student ?");
+                        if (confirm == JOptionPane.YES_OPTION) {
+                            String idText = txtId.getText().trim();
+                            int id = Integer.parseInt(idText);
+                            if ( id<=0){
+                                throw new Exception( "ID must be positive numbers!");
+                            }
+                            studentService.removeStudent(idText);
+                            JOptionPane.showMessageDialog(null, "Student deleted successfully !");
+                            loadStudents();
+                            clearFields();
+                        }
+                    } else {
+                        throw new Exception("Please select a student to delete!");
                     }
                 }
-                else {
-                    JOptionPane.showMessageDialog(null, "Please select a student to delete!");
+                catch (Exception ex)
+                {
+                    JOptionPane.showMessageDialog(null,"Error : \n"+ex.getMessage());
                 }
             }
         });
-
-
         btnLogout.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
                     int confirm = JOptionPane.showConfirmDialog(null, "Are you sure you want to save and logout ?");
                     if (confirm == JOptionPane.YES_OPTION) {
-//                      s.logout();
+                        studentService.logout();
                         dispose();
                     }
                     else if (confirm == JOptionPane.NO_OPTION){
@@ -311,48 +308,40 @@ public class Home extends JFrame {
                 }
             }
         });
-
         btnSearch.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-//                    boolean found = false;
                     String searchTxt = txtSearch.getText();
-                    DefaultTableModel model = (DefaultTableModel)table.getModel();
-
+                    if (searchTxt.isEmpty()){
+                        throw new Exception("Please Enter ID !");
+                    }
                     int searchId = Integer.parseInt(searchTxt);
                     if (searchId <= 0){
-                        JOptionPane.showMessageDialog(null,"Id should be positive !");
-                        return;
+                        throw new Exception("Id should be positive !");
                     }
-                    Student found = s.findStudent(searchId);
-
+                    Student found = studentService.findStudent(searchTxt);
                     if (found != null) {
                         DefaultTableModel model = (DefaultTableModel) table.getModel();
                         model.setRowCount(0);
-
                         Object[] row = {
-                                found.getId(),
-                                found.getName(),
+                                found.getStudentID(),
+                                found.getFullName(),
                                 found.getAge(),
                                 found.getGender(),
                                 found.getDepartment(),
-                                found.getGpa()
-                        };
-                        model.addRow(row);
-                        JOptionPane.showMessageDialog(null, "Student found successfully!");
+                                found.getGPA()};
+                                model.addRow(row);
+                    }
+                    else {
+                        throw new Exception(" Id is not found");
                     }
                 }
-                catch (NumberFormatException exception){
-                    JOptionPane.showMessageDialog(null , "Should Enter numeric value !");
-                    return;
-                }
                 catch (Exception exception){
-                    JOptionPane.showMessageDialog(null, "Error ! Id is not found");
+                    JOptionPane.showMessageDialog(null , "Error :"+exception.getMessage());
                 }
             }
         });
-
     }
     private void tableRowClick() {
         table.addMouseListener(new MouseAdapter() {
@@ -389,32 +378,28 @@ public class Home extends JFrame {
 
     private void loadStudents() {
         try {
-            ArrayList<Student> students = s.getAllStudents();
+            ArrayList<Student> students = studentService.getAllStudents();
             DefaultTableModel model = (DefaultTableModel) table.getModel();
 
             model.setRowCount(0);
 
             for (Student st : students) {
                 Object[] row = {
-                        st.getId(),
-                        st.getName(),
+                        st.getStudentID(),
+                        st.getFullName(),
                         st.getAge(),
                         st.getGender(),
                         st.getDepartment(),
-                        st.getGpa()
+                        st.getGPA()
                 };
                 model.addRow(row);
             }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Error loading student data: " + e.getMessage());
         }
+
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            new Home().setVisible(true);
-        });
-    }
 }
 
 

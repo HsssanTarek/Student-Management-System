@@ -38,7 +38,7 @@ public class StudentDatabase {
     public Student createRecordFrom(String line){
         String[] record = line.split(",");
         if (record.length==6) {
-            String studentID = record[0].trim();
+            int studentID = Integer.parseInt(record[0].trim());
             String fullName = record[1].trim();
             String department = record[2].trim();
             String gender=record[3].trim();
@@ -51,20 +51,30 @@ public class StudentDatabase {
     public ArrayList<Student> returnAllRecords(){
         return records;
     }
-    public boolean contains(String Id ){
+    public boolean contains(int Id ){
         for(Student record : records)
         {
-            if (record.getStudentID().equals(Id)){
-        
+            if (record.getStudentID()==Id){
+
                 return true;
             }
         }
         return  false;
     }
-    public Student  getRecord(String Id){
+    public Student  getRecord(int Id){
         for(Student record : records)
         {
-            if (record.getStudentID().equals(Id))
+            if (record.getStudentID()==Id)
+            {
+                return record;
+            }
+        }
+        return null;
+    }
+    public Student  getRecord(String name){
+        for(Student record : records)
+        {
+            if(record.getFullName().equals(name))
             {
                 return record;
             }
@@ -76,7 +86,7 @@ public class StudentDatabase {
             throw new Exception("Record already exists!");
         records.add(record);
     }
-    public void deleteRecord(String Id) throws Exception {
+    public void deleteRecord(int Id) throws Exception {
         Student record = getRecord(Id);
         if(record ==null)
             throw new Exception("Record not found!");
@@ -87,16 +97,24 @@ public class StudentDatabase {
         if(record==null){
             throw new Exception("Record does not exist!");
         }
-        
-            record.setFullName(bro.getFullName());
-            record.setDepartment(bro.getDepartment());
-            record.setAge(bro.getAge());
-            record.setGPA(bro.getGPA());
-            }
 
-
+        record.setFullName(bro.getFullName());
+        record.setDepartment(bro.getDepartment());
+        record.setAge(bro.getAge());
+        record.setGPA(bro.getGPA());
+        record.setGender(bro.getGender());
+    }
     public void saveToFile() throws IOException{
         PrintWriter fw = new PrintWriter(new FileWriter(filename));
+        for (int i = 0; i < records.size() - 1; i++) {
+            for (int j = 0; j < records.size() - i - 1; j++) {
+                if (records.get(j).getStudentID() > records.get(j + 1).getStudentID()) {
+                    Student temp = records.get(j);
+                    records.set(j, records.get(j + 1));
+                    records.set(j + 1, temp);
+                }
+            }
+        }
         for (Student record : records)
         {
             fw.println(record.lineRepresentation());

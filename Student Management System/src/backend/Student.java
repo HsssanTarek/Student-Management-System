@@ -1,21 +1,21 @@
 
 package backend;
 import java.util.Arrays;
-
 public class Student {
     private String fullName;
-    private String studentID;
+    private int studentID;
     private String department;
     private String gender;
     private int age;
     private double gpa;
     public static final String[] Deps={"computer" ,"mechanical","electrical","architectural","industrial"};
     public static final String[] Genders={"female","male"};
-    public Student(String studentID, String fullName, String department ,String gender,int age,double gpa){
+    public Student(int studentID, String fullName, String department ,String gender,int age,double gpa){
+        if (studentID < 0) {
+            throw new IllegalArgumentException("Student ID must be positive numbers!");
+        }
         if (fullName == null || fullName.isEmpty()||fullName.matches(".*\\d.*"))
             throw new IllegalArgumentException("Invalid Name");
-        if (studentID == null || studentID.isEmpty()||!studentID.matches("\\d{4,5}"))
-            throw new IllegalArgumentException("Invalid Student ID");
         if (gender==null||gender.isEmpty()||!Arrays.asList(Genders).contains(gender.toLowerCase()))
             throw new IllegalArgumentException("Invalid Gender");
         if(department==null||department.isEmpty()||!Arrays.asList(Deps).contains(department.toLowerCase()))
@@ -24,7 +24,7 @@ public class Student {
             throw new IllegalArgumentException("Invalid Age");
         if (gpa<=0.0||gpa>4.0)
             throw new IllegalArgumentException("Invalid GPA");
-        
+
         this.fullName=fullName;
         this.studentID=studentID;
         this.department=department.toLowerCase();
@@ -39,13 +39,21 @@ public class Student {
     public String getDepartment(){
         return department;
     }
-    public String getStudentID(){
+    public int getStudentID(){
         return studentID;
     }
     public double getGPA(){
         return gpa;
     }
     //before calling any setter make sure that inputs are trimmed!!
+
+    public String getGender() {
+        return gender;
+    }
+
+    public int getAge() {
+        return age;
+    }
     public void setAge(int age){
         if( age <16)
             throw new IllegalArgumentException("Invalid Age");
@@ -57,7 +65,7 @@ public class Student {
         this.department=department;
     }
     public void setFullName(String fullName){
-          if (fullName == null || fullName.isEmpty()||fullName.matches(".*\\d.*"))
+        if (fullName == null || fullName.isEmpty()||fullName.matches(".*\\d.*"))
             throw new IllegalArgumentException("Invalid Name");
         this.fullName=fullName;
     }
@@ -67,7 +75,13 @@ public class Student {
         this.gpa=gpa;
     }
 
+    public void setGender(String gender) {
+        if (gender==null||gender.isEmpty()||!Arrays.asList(Genders).contains(gender.toLowerCase()))
+            throw new IllegalArgumentException("Invalid Gender");
+        this.gender = gender;
+    }
+
     public String lineRepresentation(){
-        return this.studentID +','+ this.fullName +','+this.department+','+this.gender+','+this.age+','+this.gpa;
+        return studentID + "," + fullName + "," + department + "," + gender + "," + age + "," + gpa;
     }
 }

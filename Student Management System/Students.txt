@@ -1,2 +1,5 @@
+9615,Hady,computer,male,21,3.0
+9617,H,computer,male,22,3.0
 9622,Hassan,computer,male,20,3.89
-9615,Hady,computer,male,20,4.0
+9623,Yassin,computer,male,20,3.0
+9624,Fatima,computer,female,21,3.5
